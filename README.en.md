@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-for%20pranks%20only-ff69b4)
 
-Flash directly from your browser—no installation required: **[→ Web Installer](git.tino.io.vn/esp32-rickroll/)**
+Flash directly from your browser—no installation required: **[→ Web Installer](https://git.tino.io.vn/esp32-rickroll/)**
 
 
 ## Project structure

@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-for%20pranks%20only-ff69b4)
 
-Flash ngay từ trình duyệt, không cần cài gì: **[→ Trang Web Installer](git.tino.io.vn/esp32-rickroll/)**
+Flash ngay từ trình duyệt, không cần cài gì: **[→ Trang Web Installer](https://git.tino.io.vn/esp32-rickroll/)**
 
 ## Cấu trúc
 ```
