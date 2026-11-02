@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-for%20pranks%20only-ff69b4)
 
-Flash ngay từ trình duyệt, không cần cài gì: **[→ Trang Web Installer](https://<username>.github.io/<ten-repo>/)**
+Flash ngay từ trình duyệt, không cần cài gì: **[→ Trang Web Installer](git.tino.io.vn/esp32-rickroll/)**
 
 ## Cấu trúc
 ```
@@ -238,3 +238,9 @@ vì 2 vùng app0/app1 cho OTA chiếm phần lớn 4MB flash còn lại).
   Đừng đặt tên giống mạng thật (quán cà phê, công ty...), đừng giả logo
   thương hiệu thật, và đừng lưu trữ/khai thác tên người dùng nhập vào —
   làm vậy sẽ biến trò đùa thành hành vi lừa đảo/thu thập dữ liệu trái phép.
+
+# Sponsor
+[![Sponsor Me](https://img.shields.io/badge/sponsor-Me-ff69b4?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://donate.protechvn.io.vn) <br/>
+
+# License
+This code under [MIT LICENSE](LICENSE)
