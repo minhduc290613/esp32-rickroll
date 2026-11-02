@@ -1,0 +1,2 @@
+# Thư mục này do bot GitHub Actions tự điền file .bin sau lần build đầu tiên.
+# Xem .github/workflows/build-firmware.yml

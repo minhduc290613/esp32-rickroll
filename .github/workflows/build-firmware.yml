@@ -1,0 +1,105 @@
+name: Build & publish firmware
+
+# Chạy khi có commit mới đụng tới code firmware, bỏ qua thay đổi trong docs/
+# để tránh commit của chính bot kích hoạt lại workflow (vòng lặp vô hạn).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "platformio.ini"
+      - "partitions.csv"
+      - "load_env.py"
+      - ".github/workflows/build-firmware.yml"
+  workflow_dispatch: {}   # cho phép bấm "Run workflow" chạy tay trên GitHub
+
+permissions:
+  contents: write   # Vẫn giữ để tương thích, nhưng ta sẽ dùng token riêng của bot bên dưới
+
+concurrency:
+  group: build-firmware-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code với tài khoản bot phụ
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_PAT }}
+
+      - name: Cài Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cài PlatformIO
+        run: pip install --upgrade platformio
+
+      - name: Cài sẵn platform ESP32 (cache qua các lần chạy)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+
+      # QUAN TRỌNG: build công khai bằng giá trị mặc định, KHÔNG dùng secret thật.
+      # File .bin sẽ nằm công khai trên GitHub Pages, nhét mật khẩu thật vào đây
+      # coi như công bố mật khẩu cho cả thế giới (có thể đọc bằng `strings firmware.bin`).
+      # Người dùng tự đổi SSID/tài khoản admin qua trang /admin ngay sau khi flash.
+      - name: Build firmware (PlatformIO)
+        env:
+          AP_SSID: "Free WiFi"
+          ADMIN_USER: "admin"
+          ADMIN_PASS: "changeme123"
+        run: pio run -e esp32c3
+
+      - name: Gom các file .bin cần thiết
+        run: |
+          set -e
+          mkdir -p docs/firmware
+          BUILD_DIR=".pio/build/esp32c3"
+
+          cp "$BUILD_DIR/firmware.bin"    docs/firmware/firmware.bin
+          cp "$BUILD_DIR/bootloader.bin"  docs/firmware/bootloader.bin
+          cp "$BUILD_DIR/partitions.bin"  docs/firmware/partitions.bin
+
+          # boot_app0.bin nằm trong gói framework Arduino-ESP32, không ở .pio/build
+          BOOT_APP0=$(find ~/.platformio -name "boot_app0.bin" | head -n1)
+          if [ -z "$BOOT_APP0" ]; then
+            echo "Không tìm thấy boot_app0.bin"; exit 1
+          fi
+          cp "$BOOT_APP0" docs/firmware/boot_app0.bin
+
+          ls -lh docs/firmware/
+
+      - name: Cập nhật version trong manifest.json
+        run: |
+          python3 - << 'PYEOF'
+          import json, datetime, subprocess
+
+          sha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
+          ts = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
+          with open("docs/manifest.json") as f:
+              m = json.load(f)
+          m["version"] = f"{ts} ({sha})"
+
+          with open("docs/manifest.json", "w") as f:
+              json.dump(m, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          PYEOF
+          cat docs/manifest.json
+
+      - name: Commit & push firmware mới vào docs/
+        run: |
+          git config user.name "Protech BOT"
+          git config user.email "170188739+protech-bot@users.noreply.github.com"
+          git add docs/firmware docs/manifest.json
+          if git diff --cached --quiet; then
+            echo "Không có thay đổi firmware, bỏ qua commit."
+            exit 0
+          fi
+          git commit -m "chore(firmware): auto-build từ commit ${GITHUB_SHA::7} [skip ci]"
+          git push
